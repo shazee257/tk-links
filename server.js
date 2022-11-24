@@ -11,7 +11,7 @@ const LinkModel = require('./models/link');
 dotenv.config({ path: './config/config.env' });
 
 // connect DB
-connectDB(process.env.DB_USER, process.env.DB_PASSWORD, process.env.DB_NAME);
+connectDB();
 
 // app init
 const app = express();
@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // Port assign
-const port = process.env.PORT || 3000;
+const port = 5000 || 3000;
 
 app.get('/api', async (req, res) => {
     const links = await LinkModel.find();
@@ -47,11 +47,11 @@ app.post('/api', async (req, res) => {
     });
 });
 
-// app.use(express.static(path.join(__dirname, './frontend/build')));
+app.use(express.static(path.join(__dirname, './frontend/build')));
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, './frontend/build/index.html'));
-// });
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './frontend/build/index.html'));
+});
 
 
 http.createServer(app).on("error", (ex) => {
