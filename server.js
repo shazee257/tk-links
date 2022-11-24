@@ -22,11 +22,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // app.use("/", express.static(path.join(__dirname, './frontend/build')));
-app.use("/", express.static(path.resolve(path.join(__dirname, "frontend/build"))))
+
 // app.get('*', (req, res) => {
 //     res.sendFile(path.join(__dirname, './frontend/build/index.html'));
 // });
-
 
 app.get('/api', async (req, res) => {
     const links = await LinkModel.find({});
@@ -48,6 +47,7 @@ app.post('/api', async (req, res) => {
     });
 });
 
+app.use("/", express.static(path.resolve(path.join(__dirname, "frontend/build"))))
 
 const PORT = 5000 || 3000;
 
