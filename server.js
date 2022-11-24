@@ -20,15 +20,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-app.use("/", express.static(path.join(__dirname, './frontend/build')));
-// app.use("/", express.static(path.resolve(path.join(__dirname, "frontend/build"))))
+// app.use("/", express.static(path.join(__dirname, './frontend/build')));
+app.use("/", express.static(path.resolve(path.join(__dirname, "frontend/build"))))
 // app.get('*', (req, res) => {
 //     res.sendFile(path.join(__dirname, './frontend/build/index.html'));
 // });
 
 
 app.get('/api', async (req, res) => {
-    const links = await LinkModel.find();
+    const links = await LinkModel.find({});
     res.status(200).json({
         success: true,
         data: links,

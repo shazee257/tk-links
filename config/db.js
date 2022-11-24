@@ -11,7 +11,7 @@ const options = {
 };
 
 const connectDB = async () => {
-    const conn = await mongoose.connect(`mongodb+srv://test:test@cluster0-n25kv.mongodb.net/tk-links?retryWrites=true&w=majority`, options);
+    const conn = await mongoose.connect(`mongodb+srv://test:test@cluster0-n25kv.mongodb.net/tk_links?retryWrites=true&w=majority`, options);
     console.log(`MongoDB Connected: ${conn.connection.db.databaseName.substring(0, 3)}******`);
 }
 
