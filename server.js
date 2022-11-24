@@ -11,6 +11,7 @@ connectDB();
 
 // app init
 const app = express();
+let server = http.createServer(app);
 
 // Middlewares
 app.use(cors());
@@ -48,11 +49,15 @@ app.post('/api', async (req, res) => {
 });
 
 
-const port = 5000 || 3000;
+const PORT = 5000 || 3000;
 
-http.createServer(app).on("error", (ex) => {
-    console.log(ex);
-    console.log("Can't connect to server.");
-}).listen(port, () => {
-    console.log(`Server Started :: ${port}`);
+// http.createServer(app).on("error", (ex) => {
+//     console.log(ex);
+//     console.log("Can't connect to server.");
+// }).listen(port, () => {
+//     console.log(`Server Started :: ${port}`);
+// });
+
+server.listen(PORT, () => {
+    console.log("Server is Running:", PORT);
 });
