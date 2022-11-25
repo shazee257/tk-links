@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import icon from './icon.jpg';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import url from './baseUrl';
 
 function App() {
   const [links, setLinks] = useState("");
@@ -29,7 +30,7 @@ function App() {
   // }
 
   function saveLinks(data) {
-    axios.post('http://localhost:5000/api', { links: data })
+    axios.post(`${url}/api`, { links: data })
       .then(res => {
         console.log(res);
         if (res.data.statusCode === 200) {
