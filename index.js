@@ -20,7 +20,8 @@ app.use(morgan('dev'));
 
 app.get('/api', async (req, res) => {
     const links = await LinkModel.find({});
-    res.status(200).json({
+    res.send({
+        statusCode: 200,
         success: true,
         data: links,
         message: 'Links fetched successfully',
@@ -28,27 +29,66 @@ app.get('/api', async (req, res) => {
 });
 
 app.post('/api', async (req, res) => {
+    let duplicateLinks = [];
+    let newLinks = [];
     const links = req.body.links;
-    // console.log({ links });
-    const result = await LinkModel.insertMany(links);
-    res.status(200).json({
+
+    // find all links in db and match with links from frontend
+    const dbLinks = await LinkModel.find({});
+    const allLinksArray = dbLinks.map((item) => item.url);
+    console.log("DB Links: ", allLinksArray);
+
+    // filter out links that are already in db
+    // const filteredLinks = links.filter((item) => {
+    //     if (!allLinksArray.includes(item.url)) {
+    //         return item;
+    //     }
+    // });
+    // console.log({ filteredLinks });
+
+    links.forEach((item) => {
+        if (!allLinksArray.includes(item.url)) {
+            newLinks.push(item);
+        } else {
+            duplicateLinks.push(item);
+        }
+    });
+    console.log("duplicateLinks:", duplicateLinks);
+    console.log("newLinks:", newLinks);
+
+    // if newlinks empty, return message
+    if (newLinks.length === 0) {
+        return res.send({
+            statusCode: 409,
+            success: true,
+            duplicateLinks,
+            message: 'Duplicate links, nothing to save',
+        });
+    }
+
+    // save links to db
+    const savedLinks = await LinkModel.insertMany(newLinks);
+
+    res.send({
+        statusCode: 200,
         success: true,
-        data: result,
-        message: 'Links created successfully',
+        duplicateLinks,
+        data: savedLinks,
+        message: 'Links saved successfully',
     });
 });
 
 // // Frontend Routes
-// app.use(express.static(path.join(__dirname, './frontend/build')));
-// app.get('*', function (_, res) {
-//     res.sendFile(path.join(__dirname, './frontend/build/index.html'),
-//         function (err) {
-//             if (err) {
-//                 res.status(500).send(err)
-//             }
-//         }
-//     )
-// });
+app.use(express.static(path.join(__dirname, './frontend/build')));
+app.get('*', function (_, res) {
+    res.sendFile(path.join(__dirname, './frontend/build/index.html'),
+        function (err) {
+            if (err) {
+                res.status(500).send(err)
+            }
+        }
+    )
+});
 
 app.listen(PORT, () => {
     console.log(`Server Started :: ${PORT}`);
