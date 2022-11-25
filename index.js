@@ -1,22 +1,32 @@
+const PORT = 5000 || 3000;
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const cors = require("cors");
 const LinkModel = require('./models/link');
+var http = require("http");
 
 // connect DB
 connectDB();
 
 // app init
-const app = express();
-const PORT = 5000 || 3000;
+var app = express();
+var server = http.createServer(app);
 
 // Middlewares
-app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://tiktok-links.vercel.app'],
+    credentials: true
+}));
+
 app.use(morgan('dev'));
+
+
+app.use("/", express.static(path.resolve(path.join(__dirname, "frontend/build"))))
 
 app.get('/api', async (req, res) => {
     const links = await LinkModel.find({});
@@ -79,17 +89,17 @@ app.post('/api', async (req, res) => {
 });
 
 // // Frontend Routes
-app.use(express.static(path.join(__dirname, './frontend/build')));
-app.get('*', function (_, res) {
-    res.sendFile(path.join(__dirname, './frontend/build/index.html'),
-        function (err) {
-            if (err) {
-                res.status(500).send(err)
-            }
-        }
-    )
-});
+// app.use(express.static(path.join(__dirname, './frontend/build')));
+// app.get('*', function (_, res) {
+//     res.sendFile(path.join(__dirname, './frontend/build/index.html'),
+//         function (err) {
+//             if (err) {
+//                 res.status(500).send(err)
+//             }
+//         }
+//     )
+// });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server Started :: ${PORT}`);
 });

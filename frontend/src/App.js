@@ -38,7 +38,7 @@ function App() {
           setLinks([]);
           setDuplicateLinks(res.data.duplicateLinks);
         } else {
-          toast.error(res.data.message);
+          toast.info(res.data.message);
           setDuplicateLinks(res.data.duplicateLinks);
         }
       }).catch(err => console.log(err));
