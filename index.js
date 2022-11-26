@@ -14,8 +14,6 @@ connectDB();
 var app = express();
 var server = http.createServer(app);
 
-// Middlewares
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
@@ -24,7 +22,6 @@ app.use(cors({
 }));
 
 app.use(morgan('dev'));
-
 
 app.use("/", express.static(path.resolve(path.join(__dirname, "frontend/build"))))
 
@@ -47,14 +44,6 @@ app.post('/api', async (req, res) => {
     const dbLinks = await LinkModel.find({});
     const allLinksArray = dbLinks.map((item) => item.url);
     console.log("DB Links: ", allLinksArray);
-
-    // filter out links that are already in db
-    // const filteredLinks = links.filter((item) => {
-    //     if (!allLinksArray.includes(item.url)) {
-    //         return item;
-    //     }
-    // });
-    // console.log({ filteredLinks });
 
     links.forEach((item) => {
         if (!allLinksArray.includes(item.url)) {
@@ -88,17 +77,40 @@ app.post('/api', async (req, res) => {
     });
 });
 
-// // Frontend Routes
-// app.use(express.static(path.join(__dirname, './frontend/build')));
-// app.get('*', function (_, res) {
-//     res.sendFile(path.join(__dirname, './frontend/build/index.html'),
-//         function (err) {
-//             if (err) {
-//                 res.status(500).send(err)
-//             }
-//         }
-//     )
-// });
+app.post('/api/check', async (req, res) => {
+    let duplicateLinks = [];
+    const links = req.body.links;
+
+    // find all links in db and match with links from frontend
+    const dbLinks = await LinkModel.find({});
+    const allLinksArray = dbLinks.map((item) => item.url);
+    console.log("DB Links: ", allLinksArray);
+
+    links.forEach((item) => {
+        if (allLinksArray.includes(item.url)) {
+            duplicateLinks.push(item);
+        }
+    });
+    console.log("duplicateLinks:", duplicateLinks);
+
+    // if duplicateLinks empty, return message
+    if (duplicateLinks.length === 0) {
+        return res.send({
+            statusCode: 409,
+            success: true,
+            duplicateLinks,
+            message: 'No duplicate links found',
+        });
+    }
+
+    res.send({
+        statusCode: 200,
+        success: true,
+        duplicateLinks,
+        message: 'Duplicate links found',
+    });
+});
+
 
 server.listen(PORT, () => {
     console.log(`Server Started :: ${PORT}`);

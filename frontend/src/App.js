@@ -10,24 +10,8 @@ import url from './baseUrl';
 
 function App() {
   const [links, setLinks] = useState("");
-  const [duplicateLinks, setDuplicateLinks] = useState([])
-
-  // const deleteLink = (index) => {
-  //   links.splice(index, 1);
-  //   setLinks([...links]);
-  // }
-
-  // const addLink = () => {
-  //   links.push({ url: 'Enter Tiktok URL' });
-  //   setLinks([...links]);
-  // }
-
-  // const updateLink = (key, index, value) => {
-  //   if (links[index][key] !== value) {
-  //     links[index][key] = value;
-  //     setLinks([...links])
-  //   }
-  // }
+  const [duplicateLinks, setDuplicateLinks] = useState([]);
+  const [data, setData] = useState([]);
 
   function saveLinks(data) {
     axios.post(`${url}/api`, { links: data })
@@ -44,8 +28,68 @@ function App() {
       }).catch(err => console.log(err));
   }
 
+  function fetchDuplicateLinks(data) {
+    axios.post(`${url}/api/check`, { links: data })
+      .then(res => {
+        console.log(res);
+        if (res.data.statusCode === 200) {
+          setDuplicateLinks(res.data.duplicateLinks);
+          toast.success(res.data.message);
+        } else {
+          setDuplicateLinks(res.data.duplicateLinks);
+          toast.info(res.data.message);
+        }
+      }).catch(err => console.log(err));
+  }
+
+  const duplicateLinksHandler = () => {
+    // if links empty, return
+    if (links == "") return toast.error("Please enter links");
+
+    // filters only tiktok links
+    let data = links.split("\n");
+
+    // remove query paramaters
+    data = data.map((item) => {
+      return item.split("?")[0];
+    });
+
+    // remove empty lines
+    data = data.filter((item) => {
+      return item !== "";
+    });
+
+    // string does not contain "tiktok.com"
+    data = data.filter((item) => {
+      if (item.includes("tiktok.com")) {
+        return item;
+      }
+    });
+
+    // remove duplicate links
+    data = [...new Set(data)];
+    // setLinks(data.join("\n"));
+
+    let strToArray = data.map(link => {
+      return { url: link };
+    })
+
+    if (strToArray.length === 0) {
+      toast.error("No valid links found");
+      return;
+    }
+
+    // check if links already exist in db
+    fetchDuplicateLinks(strToArray);
+  }
+
+
+
   // string to array
   const URLProcessing = (str) => {
+    // if links empty, return
+    if (str == "") return toast.error("Please enter links");
+
     let data = str.split("\n");
 
     // remove query paramaters
@@ -78,14 +122,47 @@ function App() {
       return;
     }
 
+    setData(strToArray);
     console.log({ strToArray });
     saveLinks(strToArray);
+
   }
 
   const submitHandler = (e) => {
     e.preventDefault();
     URLProcessing(links);
+
   }
+
+  const filterLinks = () => {
+    // if links empty, return
+    if (links == "") return toast.error("Please enter links");
+
+    // filters only tiktok links
+    let data = links.split("\n");
+
+    // remove query paramaters
+    data = data.map((item) => {
+      return item.split("?")[0];
+    });
+
+    // remove empty lines
+    data = data.filter((item) => {
+      return item !== "";
+    });
+
+    // string does not contain "tiktok.com"
+    data = data.filter((item) => {
+      if (item.includes("tiktok.com")) {
+        return item;
+      }
+    });
+
+    // remove duplicate links
+    data = [...new Set(data)];
+    setLinks(data.join("\n"));
+  }
+
 
   return (
     <div className="App flex-1 m-4">
@@ -95,11 +172,6 @@ function App() {
             <div className='flex justify-center'>
               <img src={icon} alt="Logo" className="w-2/4 h-2/4 rounded-md" />
             </div>
-            {/* <div className='flex justify-between items-center mx-10'>
-              <Typography variant="" className='' textAlign='center'>
-                Insert Tiktok Links
-              </Typography>
-            </div> */}
 
             <div className="flex-1 px-10 py-5">
               <div className='flex justify-between items-center space-x-4 pb-4'>
@@ -112,6 +184,16 @@ function App() {
                   value={links}
                   onChange={(e) => setLinks(e.target.value)}
                 />
+                <div className='flex flex-col items-center space-y-5 '>
+                  <Button color='info' variant="contained" size='large' className='mb-8 w-40'
+                    onClick={filterLinks}>
+                    Filter Links
+                  </Button>
+                  <Button color='info' variant="contained" size='large' className='mb-8 w-40'
+                    onClick={duplicateLinksHandler}>
+                    Check in DB
+                  </Button>
+                </div>
               </div>
             </div>
             <div className='flex justify-center my-4'>
